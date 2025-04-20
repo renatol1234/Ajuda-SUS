@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajuda SUS</title>
+    <link rel="icon" href="https://www.simec.com.br/media/img_noticias/defesa_sus.jpg" type="image/png">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@google-cloud/speech@5.4.0/dist/browser/speech.min.js"></script>
+  
+</head>
+
+<body>
+    <!-- Overlay para o popup -->
+    <div class="overlay" id="overlay"></div>
+    
+    <!-- Popup de compatibilidade -->
+    <div class="compatibility-popup" id="compatibilityPopup">
+        <h3>Aviso de Compatibilidade</h3>
+        <p>Você está usando um navegador que pode não ser totalmente compatível com nosso sistema.</p>
+        <p>Para melhor experiência, recomendamos utilizar:</p>
+        
+        <div class="browser-icons">
+            <i class="fab fa-chrome" title="Google Chrome"></i> Chrome |
+            <i class="fab fa-edge" title="Microsoft Edge"></i> Edge |
+            <i class="fab fa-opera" title="Opera"></i> Opera |
+            <i class="fab fa-safari" title="Safari"></i> Safari |
+            <i class="fab fa-brave" title="Brave"></i> Brave |
+            <i class="fab fa-vivaldi" title="Vivaldi"></i> Vivaldi
+        </div>
+        
+        <p>Alguns recursos podem não funcionar corretamente no seu navegador atual.</p>
+        <button onclick="closePopup()">Entendi, quero continuar! </button>
+    </div>
+
+    <!-- Menu Sanduíche -->
+    <div class="menu-container">
+        <button id="menuButton" class="menu-button">☰</button>
+        <div id="emergencyMenu" class="emergency-menu">
+            <h3>Discagem de Emergência</h3>
+            <button class="emergency-btn" onclick="window.open('https://meususdigital.saude.gov.br/', '_blank')">Meu SUS Digital</button>
+            <button class="emergency-btn" onclick="callNumber('136')">Disque Saúde (136)</button>
+            <button class="emergency-btn" onclick="callNumber('192')">SAMU (192)</button>
+            <button class="emergency-btn" onclick="callNumber('193')">Corpo de Bombeiros (193)</button>
+            <button class="emergency-btn" onclick="callNumber('08007226001')">Disque Intoxicação (0800-722-6001)</button>
+            <button class="emergency-btn" onclick="callNumber('08007019656')">Disque ANS (0800 701 9656)</button>
+            <button class="emergency-btn" onclick="callNumber('08006429782')">Disque Anvisa (0800 642 9782)</button>
+            
+            <button class="emergency-btn" onclick="callNumber('08006446645')">CIEVS (0800-644-6645)</button>
+            <button class="emergency-btn" onclick="callNumber('190')">Brigada Militar (190)</button>
+            
+            <button class="emergency-btn" onclick="callNumber('199')">Defesa Civil (199)</button>
+            
+            <!-- Botão Ana Ajuda! - Campinas (será mostrado apenas em Campinas) -->
+            <div id="anaAjudaContainer" class="ana-ajuda-container">
+                <button id="anaAjudaBtn" class="ana-ajuda-btn" onclick="openWhatsApp()">Ana Ajuda! - Campinas</button>
+            </div>
+        </div>
+    </div>
+
+    <h1>Ajuda SUS</h1>
+    <button id="micButton">🎤 Fale seu sintoma</button>
+    <div>
+        <input type="text" id="symptomInput" list="symptomSuggestions" placeholder="Digite ou fale seu sintoma">
+        <datalist id="symptomSuggestions"></datalist>
+    </div>
+    <div id="result"></div>
+    <div id="timer"></div>
+    <h2>Ou escolha um sintoma ou serviço abaixo:</h2>
+    <div id="symptomList"></div>
+    <div id="map"></div>
+    
+    <footer style="text-align: center; padding: 10px; background-color: #f4f4f4; font-family: Arial, sans-serif; font-size: 14px; color: #555;">
+        <p>© 2025 Todos os direitos reservados.</p>
+        <p>Desenvolvido por <strong><a href="https://www.facebook.com/Renatol1234/" target="_blank" style="color: #007BFF; text-decoration: none;">Renato Luciano</a></strong></p>
+    </footer>
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD4p6ZQyideBJV8PJmktnqLYQCXP44Px50&libraries=places&callback=initMap" async defer></script>
+    <script src="script.js"></script>
+    
+    
+    <script>
+        // Função para detectar o navegador
+        function detectBrowser() {
+            const userAgent = navigator.userAgent;
+            let browserName;
+            
+            if (userAgent.match(/chrome|chromium|crios/i)) {
+                browserName = "Chrome";
+            } else if (userAgent.match(/firefox|fxios/i)) {
+                browserName = "Firefox";
+            } else if (userAgent.match(/safari/i)) {
+                browserName = "Safari";
+            } else if (userAgent.match(/opr\//i)) {
+                browserName = "Opera";
+            } else if (userAgent.match(/edg/i)) {
+                browserName = "Edge";
+            } else if (userAgent.match(/brave/i)) {
+                browserName = "Brave";
+            } else if (userAgent.match(/vivaldi/i)) {
+                browserName = "Vivaldi";
+            } else {
+                browserName = "Unknown";
+            }
+            
+            return browserName;
+        }
+        
+        // Navegadores compatíveis
+        const compatibleBrowsers = ["Chrome", "Edge", "Opera", "Safari", "Brave", "Vivaldi"];
+        
+        // Verificar compatibilidade ao carregar a página
+        window.onload = function() {
+            const currentBrowser = detectBrowser();
+            
+            if (!compatibleBrowsers.includes(currentBrowser)) {
+                document.getElementById('overlay').style.display = 'block';
+                document.getElementById('compatibilityPopup').style.display = 'block';
+            }
+        };
+        
+        // Fechar o popup
+        function closePopup() {
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('compatibilityPopup').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

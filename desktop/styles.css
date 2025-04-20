@@ -1,0 +1,258 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    padding: 20px;
+    background-color: #f0f0f0;
+}
+
+
+/* Estilos do Menu de Emergência - Canto Superior Esquerdo */
+.menu-container {
+    position: fixed; /* Fixo na tela */
+    top: 10px;
+    left: 10px;
+    z-index: 1000; /* Garante que fique acima de outros elementos */
+}
+
+.menu-button {
+    padding: 10px 15px;
+    font-size: 20px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.emergency-menu {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 250px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+    border-radius: 5px;
+    padding: 10px;
+    left: 0;
+    top: 100%;
+    margin-top: 5px;
+}
+
+.emergency-menu h3 {
+    color: #2c3e50;
+    margin-top: 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.emergency-btn {
+    display: block;
+    width: 100%;
+    padding: 8px 12px;
+    margin: 5px 0;
+    text-align: left;
+    background-color: #3c3ce7;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.emergency-btn:hover {
+    background-color: #2b9dc0;
+}
+
+/* Estilos do Botão Ana Ajuda */
+.ana-ajuda-container {
+    display: none;
+    margin-bottom: 20px;
+}
+
+.ana-ajuda-btn {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #2ecc71;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.ana-ajuda-btn:hover {
+    background-color: #27ae60;
+}
+
+
+
+
+
+
+h1 {
+    color: #2c3e50;
+}
+
+#micButton {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+#micButton:disabled {
+    background-color: #95a5a6;
+    cursor: not-allowed;
+}
+
+#micButton:hover:not(:disabled) {
+    background-color: #2980b9;
+}
+
+
+
+
+
+
+
+#symptomInput {
+    margin-top: 20px;
+    padding: 8px;
+    font-size: 16px;
+    width: 300px;
+    border: 1px solid #bdc3c7;
+    border-radius: 5px;
+}
+
+#result {
+    margin-top: 20px;
+    font-size: 18px;
+    color: #e74c3c;
+    min-height: 50px;
+}
+
+#timer {
+    margin-top: 10px;
+    font-size: 16px;
+    color: #7f8c8d;
+    min-height: 30px;
+}
+
+#symptomList {
+    margin-top: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+}
+
+.symptom {
+    padding: 10px;
+    background-color: #ecf0f1;
+    border: 1px solid #bdc3c7;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.symptom:hover {
+    background-color: #dfe6e9;
+}
+
+#map {
+    height: 400px;
+    width: 100%;
+    display: none;
+    margin-top: 20px;
+}
+
+.cancel-button {
+    margin-left: 10px;
+    padding: 5px 10px;
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.cancel-button:hover {
+    background-color: #c0392b;
+}
+
+
+.symptom {
+    flex: 1 1 calc(33.33% - 10px); /* 3 por linha com espaço entre eles */
+    box-sizing: border-box;
+    max-width: calc(33.33% - 10px);
+    word-wrap: break-word;
+}
+
+@media (max-width: 768px) {
+    .symptom {
+        flex: 1 1 calc(33.33% - 10px); /* ainda 3 por linha em mobile */
+        max-width: calc(33.33% - 10px);
+    }
+}
+
+.symptom.full-width {
+    flex: 1 1 100% !important;
+    max-width: 100% !important;
+}
+
+
+ /* Estilo do popup */
+ .compatibility-popup {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #f8f9fa;
+    border: 2px solid #3498db;
+    border-radius: 10px;
+    padding: 20px;
+    width: 80%;
+    max-width: 500px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    z-index: 1000;
+    text-align: center;
+}
+
+.compatibility-popup h3 {
+    color: #3498db;
+    margin-top: 0;
+}
+
+.compatibility-popup .browser-icons {
+    margin: 15px 0;
+    font-size: 24px;
+}
+
+.compatibility-popup .browser-icons i {
+    margin: 0 5px;
+}
+
+.compatibility-popup button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 15px;
+}
+
+.overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    z-index: 999;
+}
