@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Enquete de Saúde</title>
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .container {
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h1, h2 {
+      color: #2c3e50;
+      text-align: center;
+    }
+    .question-card {
+      margin-bottom: 30px;
+      padding: 20px;
+      background-color: #f9f9f9;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .chart-container {
+      position: relative;
+      height: 300px;
+      margin-top: 20px;
+    }
+    .stats {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #e8f4fc;
+      border-radius: 5px;
+    }
+    .stat-item {
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 24px;
+      font-weight: bold;
+      color: #3498db;
+    }
+    .correct {
+      color: #27ae60;
+    }
+    .incorrect {
+      color: #e74c3c;
+    }
+    .filter-section {
+      margin-bottom: 20px;
+      padding: 15px;
+      background-color: #e8f4fc;
+      border-radius: 5px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+    select, button {
+      padding: 8px 12px;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+    }
+    button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Dashboard - Enquete de Saúde</h1>
+    <div class="filter-section">
+      <div>
+        <label for="question-filter">Filtrar por pergunta:</label>
+        <select id="question-filter">
+          <option value="all">Todas as perguntas</option>
+        </select>
+      </div>
+      <div>
+        <label for="date-filter">Filtrar por data:</label>
+        <input type="date" id="date-filter">
+      </div>
+      <button id="apply-filter">Aplicar Filtro</button>
+      <button id="reset-filter">Resetar Filtro</button>
+    </div>
+    <div id="results-container"></div>
+  </div>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBRYR48P8M8E6-OxOdhJPS5DffAnHjpWpY",
+      authDomain: "tcc-ajuda-sus.firebaseapp.com",
+      projectId: "tcc-ajuda-sus",
+      storageBucket: "tcc-ajuda-sus.appspot.com",
+      messagingSenderId: "257850974368",
+      appId: "1:257850974368:web:9f97356bdbd9a6f20ba9c5"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    const correctAnswerMap = {
+      '1': 'Pronto Socorro',
+      '2': 'UBS',
+      '3': 'UBS',
+      '4': 'UBS',
+      '5': 'UPA',
+      '6': 'UBS',
+      '7': 'UBS',
+      '8': 'UBS',
+      '9': 'Pronto Socorro',
+      '10': 'UBS'
+    };
+
+    let allResponses = [], allQuestions = {}, charts = {};
+    const questionFilter = document.getElementById('question-filter');
+    const dateFilter = document.getElementById('date-filter');
+    const resultsContainer = document.getElementById('results-container');
+
+    document.getElementById('apply-filter').addEventListener('click', renderResults);
+    document.getElementById('reset-filter').addEventListener('click', () => {
+      questionFilter.value = 'all';
+      dateFilter.value = '';
+      renderResults();
+    });
+
+    function loadData() {
+      database.ref('responses').on('value', (snapshot) => {
+        allResponses = [];
+        snapshot.forEach(childSnapshot => {
+          const response = childSnapshot.val();
+          response.key = childSnapshot.key;
+          allResponses.push(response);
+        });
+        processData();
+      });
+    }
+
+    function processData() {
+      allQuestions = {};
+      allResponses.forEach(response => {
+        response.responses.forEach(resp => {
+          if (!allQuestions[resp.questionId]) {
+            const correct = correctAnswerMap[resp.questionId] || resp.correctAnswer;
+            allQuestions[resp.questionId] = {
+              id: resp.questionId,
+              text: resp.questionText,
+              correctAnswer: correct,
+              options: resp.options || ["UPA", "UBS", "Pronto Socorro", "Farmácia"],
+              responses: []
+            };
+          }
+          const correct = correctAnswerMap[resp.questionId] || resp.correctAnswer;
+          resp.isCorrect = resp.selectedAnswer === correct;
+          allQuestions[resp.questionId].responses.push(resp);
+        });
+      });
+      populateQuestionFilter();
+      renderResults();
+    }
+
+    function populateQuestionFilter() {
+      questionFilter.innerHTML = '<option value="all">Todas as perguntas</option>';
+      Object.values(allQuestions).forEach(q => {
+        const option = document.createElement('option');
+        option.value = q.id;
+        option.textContent = `Pergunta ${q.id}: ${q.text.substring(0, 50)}...`;
+        questionFilter.appendChild(option);
+      });
+    }
+
+    function renderResults() {
+      resultsContainer.innerHTML = '';
+      const selectedQuestionId = questionFilter.value;
+      const selectedDate = dateFilter.value;
+      const questionsToShow = selectedQuestionId === 'all' ? Object.values(allQuestions) : [allQuestions[selectedQuestionId]];
+
+      questionsToShow.forEach(question => {
+        if (!question) return;
+        let filteredResponses = question.responses;
+        if (selectedDate) {
+          filteredResponses = filteredResponses.filter(resp => new Date(resp.timestamp).toISOString().split('T')[0] === selectedDate);
+        }
+        const total = filteredResponses.length;
+        if (total === 0) {
+          resultsContainer.innerHTML += `
+            <div class="question-card">
+              <h3>Pergunta ${question.id}</h3>
+              <p>${question.text}</p>
+              <p>Nenhuma resposta encontrada com os filtros aplicados.</p>
+            </div>`;
+          return;
+        }
+        const correctCount = filteredResponses.filter(r => r.isCorrect).length;
+        const accuracy = ((correctCount / total) * 100).toFixed(1);
+        const optionCounts = {};
+        question.options.forEach(opt => {
+          optionCounts[opt] = filteredResponses.filter(r => r.selectedAnswer === opt).length;
+        });
+        const card = document.createElement('div');
+        card.className = 'question-card';
+        card.innerHTML = `
+          <h3>Pergunta ${question.id}</h3>
+          <p>${question.text}</p>
+          <p><strong>Resposta correta:</strong> <span class="correct">${question.correctAnswer}</span></p>
+          <div class="stats">
+            <div class="stat-item"><div class="stat-label">Total de respostas</div><div class="stat-value">${total}</div></div>
+            <div class="stat-item"><div class="stat-label">Respostas corretas</div><div class="stat-value correct">${correctCount}</div></div>
+            <div class="stat-item"><div class="stat-label">Taxa de acerto</div><div class="stat-value">${accuracy}%</div></div>
+          </div>
+          <div class="chart-container"><canvas id="chart-${question.id}"></canvas></div>`;
+        resultsContainer.appendChild(card);
+        renderChart(question.id, question.options, optionCounts, question.correctAnswer);
+      });
+    }
+
+    function renderChart(questionId, options, optionCounts, correctAnswer) {
+      const ctx = document.getElementById(`chart-${questionId}`).getContext('2d');
+      if (charts[questionId]) charts[questionId].destroy();
+      const colors = options.map(opt =>
+        opt === correctAnswer ? '#27ae60' :
+        opt === 'UPA' ? '#e74c3c' :
+        opt === 'UBS' ? '#3498db' : '#9b59b6'
+      );
+      charts[questionId] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: options,
+          datasets: [{
+            label: 'Número de respostas',
+            data: options.map(opt => optionCounts[opt]),
+            backgroundColor: colors,
+            borderColor: colors.map(c => c.replace('0.7', '1')),
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: 'Número de respostas' }
+            },
+            x: {
+              title: { display: true, text: 'Opções de resposta' }
+            }
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: context => {
+                  const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                  const value = context.raw;
+                  const percent = ((value / total) * 100).toFixed(0);
+                  return `${value} respostas (${percent}%)`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    loadData();
+  </script>
+</body>
+</html>

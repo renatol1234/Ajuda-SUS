@@ -184,6 +184,22 @@ function limparTimer() {
     }
 }
 
+
+// Carregar chave do Google Maps a partir de config.json
+fetch('config.json')
+    .then(response => response.json())
+    .then(config => {
+        const apiKey = config.googleMapsApiKey;
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initMap`;
+        script.async = true;
+        script.defer = true;
+        document.head.appendChild(script);
+    })
+    .catch(error => console.error("Erro ao carregar config.json:", error));
+
+
+
 // ===== Função principal de navegação (MOBILE-ONLY) =====
 function iniciarTimerNavegacao(termo) {
     let segundos = 5;
@@ -215,6 +231,11 @@ function abrirMapaNativo(termo) {
     } else {
         window.open(`https://www.google.com/maps/search/${encodeURIComponent(termo)}`, "_blank");
     }
+
+    
+     // ✅ Salvar log somente aqui, quando realmente abre o mapa
+    salvarLogSintoma(termo);
+
 }
 
 function criarBotaoCancelar() {

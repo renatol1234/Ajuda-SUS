@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enquete de Saúde - SUS</title>
+     <link rel="icon" href="https://www.simec.com.br/media/img_noticias/defesa_sus.jpg" type="image/png">
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .question {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .option {
+            display: flex;
+            align-items: center;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        .consent {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #e8f4fc;
+            border-radius: 5px;
+        }
+        .consent-check {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .hidden {
+            display: none;
+        }
+        .thank-you {
+            text-align: center;
+            font-size: 18px;
+            color: #27ae60;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Enquete de Saúde - SUS</h1>
+        
+        <!-- Termo de Aceitação -->
+        <div id="consent-section" class="consent">
+            <h2>Termo de Aceitação</h2>
+            <p>Esta enquete é anônima e tem como objetivo coletar informações sobre sintomas clínicos e a escolha de serviços de saúde. Os dados coletados serão utilizados para melhorar o atendimento no SUS.</p>
+            <p>Por favor, leia e aceite os termos abaixo para participar:</p>
+            <ul>
+                <li>Eu concordo em participar voluntariamente desta pesquisa.</li>
+                <li>Entendo que minhas respostas são anônimas e confidenciais.</li>
+                <li>Concordo que os dados coletados possam ser usados para fins de pesquisa e melhoria do SUS.</li>
+            </ul>
+            <div class="consent-check">
+                <input type="checkbox" id="consent-checkbox">
+                <label for="consent-checkbox">Eu li e concordo com os termos acima</label>
+            </div>
+            <button id="start-btn" disabled>Iniciar Enquete</button>
+        </div>
+        
+        <!-- Formulário da Enquete -->
+        <div id="survey-section" class="hidden">
+            <div id="questions-container"></div>
+            <button id="submit-btn">Enviar Respostas</button>
+        </div>
+        
+        <!-- Mensagem de agradecimento e opção para continuar -->
+        <div id="thank-you-section" class="hidden">
+            <div class="thank-you">
+                <p>Obrigado por participar da nossa enquete!</p>
+                <p id="continue-message">Gostaria de responder mais 5 perguntas?</p>
+                <button id="continue-btn">Sim, continuar</button>
+                <button id="finish-btn">Não, finalizar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Inicializa o Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBRYR48P8M8E6-OxOdhJPS5DffAnHjpWpY",
+            authDomain: "tcc-ajuda-sus.firebaseapp.com",
+            projectId: "tcc-ajuda-sus",
+            storageBucket: "tcc-ajuda-sus.appspot.com",
+            messagingSenderId: "257850974368",
+            appId: "1:257850974368:web:9f97356bdbd9a6f20ba9c5"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        
+        // Perguntas da enquete (pode ser expandido)
+        const allQuestions = [
+            {
+                id: 1,
+                text: "Para qual serviço de saúde você deve encaminhar um paciente com febre alta (acima de 39°C), dor de cabeça intensa e rigidez na nuca?",
+                correctAnswer: "Pronto Socorro",
+                options: ["UPA", "UBS", "Pronto Socorro", "Farmácia"]
+            },
+            {
+                id: 2,
+                text: "Onde um paciente com tosse persistente há mais de 3 semanas deve buscar atendimento inicial?",
+                correctAnswer: "UBS",
+                options: ["UPA", "UBS", "Pronto Socorro", "Farmácia"]
+            },
+            {
+                id: 3,
+                text: "Para qual serviço encaminhar um paciente com dor de dente moderada sem outros sintomas?",
+                correctAnswer: "UBS",
+                options: ["UPA", "UBS", "Pronto Socorro", "Farmácia"]
+            },
+            {
+                id: 4,
+                text: "Onde buscar ajuda para um resfriado comum com coriza e leve dor de garganta?",
+                correctAnswer: "Farmácia",
+                options: ["UPA", "UBS", "Pronto Socorro", "Farmácia"]
+            },
+            {
+                id: 5,
+                text: "Para qual serviço encaminhar um paciente com dor no peito intensa e falta de ar?",
+                correctAnswer: "Pronto Socorro",
+                options: ["UPA", "UBS", "Pronto Socorro", "Farmácia"]
+            },
+            {
+                id: 6,
+                text: "Onde um paciente com pressão alta (17/11) mas sem outros sintomas deve buscar atendimento?",
+                correctAnswer: "UBS",
+                options: ["UPA", "UBS", "Pronto Socorro", "Farmácia"]
+            },
+            {
+                id: 7,
+                text: "Para qual serviço encaminhar um paciente com dor abdominal leve há 2 dias?",
+                correctAnswer: "UBS",
+                options: ["UPA", "UBS", "Pronto Socorro", "Farmácia"]
+            },
+            {
+                id: 8,
+                text: "Onde buscar ajuda para uma alergia cutânea sem dificuldade respiratória?",
+                correctAnswer: "Farmácia",
+                options: ["UPA", "UBS", "Pronto Socorro", "Farmácia"]
+            },
+            {
+                id: 9,
+                text: "Para qual serviço encaminhar um paciente com suspeita de fratura após queda?",
+                correctAnswer: "Pronto Socorro",
+                options: ["UPA", "UBS", "Pronto Socorro", "Farmácia"]
+            },
+            {
+                id: 10,
+                text: "Onde um paciente com diabetes deve buscar acompanhamento regular?",
+                correctAnswer: "UBS",
+                options: ["UPA", "UBS", "Pronto Socorro", "Farmácia"]
+            }
+        ];
+        
+        // Elementos da página
+        const consentCheckbox = document.getElementById('consent-checkbox');
+        const startBtn = document.getElementById('start-btn');
+        const surveySection = document.getElementById('survey-section');
+        const questionsContainer = document.getElementById('questions-container');
+        const submitBtn = document.getElementById('submit-btn');
+        const thankYouSection = document.getElementById('thank-you-section');
+        const continueBtn = document.getElementById('continue-btn');
+        const finishBtn = document.getElementById('finish-btn');
+        
+        // Variáveis de estado
+        let answeredQuestions = [];
+        let currentQuestions = [];
+        
+        // Event Listeners
+        consentCheckbox.addEventListener('change', () => {
+            startBtn.disabled = !consentCheckbox.checked;
+        });
+        
+        startBtn.addEventListener('click', startSurvey);
+        submitBtn.addEventListener('click', submitSurvey);
+        continueBtn.addEventListener('click', startSurvey);
+        finishBtn.addEventListener('click', () => {
+            alert('Obrigado novamente por sua participação!');
+            location.reload();
+        });
+        
+        // Função para iniciar a enquete
+        function startSurvey() {
+            // Esconde seções não necessárias
+            document.getElementById('consent-section').classList.add('hidden');
+            thankYouSection.classList.add('hidden');
+            
+            // Seleciona 5 perguntas não respondidas
+            const availableQuestions = allQuestions.filter(q => !answeredQuestions.includes(q.id));
+            currentQuestions = [];
+            
+            // Seleciona até 5 perguntas aleatórias
+            for (let i = 0; i < Math.min(5, availableQuestions.length); i++) {
+                const randomIndex = Math.floor(Math.random() * availableQuestions.length);
+                currentQuestions.push(availableQuestions[randomIndex]);
+                availableQuestions.splice(randomIndex, 1);
+            }
+            
+            // Se não houver mais perguntas, mostra mensagem final
+            if (currentQuestions.length === 0) {
+                document.getElementById('continue-message').textContent = 'Você respondeu todas as perguntas disponíveis. Obrigado!';
+                continueBtn.disabled = true;
+                thankYouSection.classList.remove('hidden');
+                return;
+            }
+            
+            // Renderiza as perguntas
+            renderQuestions();
+            
+            // Mostra a seção da enquete
+            surveySection.classList.remove('hidden');
+        }
+        
+        // Função para renderizar as perguntas
+        function renderQuestions() {
+            questionsContainer.innerHTML = '';
+            
+            currentQuestions.forEach((question, index) => {
+                const questionElement = document.createElement('div');
+                questionElement.className = 'question';
+                questionElement.innerHTML = `
+                    <h3>Pergunta ${index + 1}</h3>
+                    <p>${question.text}</p>
+                    <div class="options" id="options-${question.id}">
+                        ${question.options.map(option => `
+                            <div class="option">
+                                <input type="radio" id="q${question.id}-${option}" name="q${question.id}" value="${option}">
+                                <label for="q${question.id}-${option}">${option}</label>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                questionsContainer.appendChild(questionElement);
+            });
+        }
+        
+        // Função para enviar as respostas
+        function submitSurvey() {
+            // Coleta as respostas
+            const responses = currentQuestions.map(question => {
+                const selectedOption = document.querySelector(`input[name="q${question.id}"]:checked`);
+                return {
+                    questionId: question.id,
+                    questionText: question.text,
+                    correctAnswer: question.correctAnswer,
+                    selectedAnswer: selectedOption ? selectedOption.value : null,
+                    isCorrect: selectedOption ? selectedOption.value === question.correctAnswer : false,
+                    timestamp: new Date().toISOString(),
+                    deviceInfo: navigator.userAgent
+                };
+            });
+            
+            // Verifica se todas as perguntas foram respondidas
+            if (responses.some(r => r.selectedAnswer === null)) {
+                alert('Por favor, responda todas as perguntas antes de enviar.');
+                return;
+            }
+            
+            // Adiciona as perguntas respondidas à lista
+            currentQuestions.forEach(q => answeredQuestions.push(q.id));
+            
+            // Envia para o Firebase
+            const newResponseRef = database.ref('responses').push();
+            newResponseRef.set({
+                responses: responses,
+                timestamp: new Date().toISOString(),
+                deviceInfo: navigator.userAgent
+            })
+            .then(() => {
+                // Mostra mensagem de agradecimento
+                surveySection.classList.add('hidden');
+                thankYouSection.classList.remove('hidden');
+            })
+            .catch(error => {
+                console.error('Erro ao enviar respostas:', error);
+                alert('Ocorreu um erro ao enviar suas respostas. Por favor, tente novamente.');
+            });
+        }
+    </script>
+</body>
+</html>

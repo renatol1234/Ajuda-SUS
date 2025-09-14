@@ -2,8 +2,11 @@ body {
     font-family: Arial, sans-serif;
     text-align: center;
     padding: 20px;
-    background-color: #f0f0f0;
+    background-color: #bddfee;
+    
 }
+
+/* background-color: #f0f0f0; original */
 
 
 /* Estilos do Menu de Emergência - Canto Superior Esquerdo */
@@ -151,15 +154,34 @@ h1 {
 }
 
 .symptom {
-    padding: 10px;
-    background-color: #ecf0f1;
-    border: 1px solid #bdc3c7;
+    flex: 1 1 calc(33.33% - 10px);
+    box-sizing: border-box;
+    max-width: calc(33.33% - 10px);
+    word-wrap: break-word;
+    
+    /* Novos estilos */
+    background-color: #ffffff; /* Fundo branco para se destacar */
+    color: #2c3e50; /* Cor do texto */
+    border: none;
     cursor: pointer;
-    border-radius: 5px;
+    border-radius: 10px; /* Borda mais arredondada */
+    padding: 15px 10px; /* Mais padding para um visual mais "cheio" */
+    font-size: 14px;
+    font-weight: bold;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombra para dar profundidade */
+    transition: transform 0.2s ease, box-shadow 0.2s ease; /* Transição suave */
 }
 
 .symptom:hover {
-    background-color: #dfe6e9;
+    transform: translateY(-3px); /* Leve subida ao passar o mouse */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); /* Sombra mais forte */
+}
+
+/* Efeito de clique (feedback visual) */
+.symptom:active {
+    transform: translateY(0); /* Retorna à posição original */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra mais sutil */
+    background-color: #ecf0f1; /* Leve alteração de cor no clique */
 }
 
 #map {
@@ -297,3 +319,5 @@ p{
 }
 
 }
+
+
